@@ -1,0 +1,27 @@
+<div class="game-wrapper" tabindex="0" style="width:100%; height:100vh; overflow:hidden; outline:none;">
+  <iframe
+    id="game-frame"
+    src="https://dicestack88.github.io/ebclient/"
+    style="width:100%; height:100%; border:0; display:block;"
+    allowfullscreen
+  ></iframe>
+</div>
+
+<script>
+  (function () {
+    const wrapper = document.querySelector('.game-wrapper');
+    const iframe = document.getElementById('game-frame');
+
+    if (!wrapper || !iframe) return;
+
+    // Focus iframe when the wrapper is clicked
+    wrapper.addEventListener('click', function () {
+      iframe.focus();
+    });
+
+    // Also try to focus once when it loads
+    iframe.addEventListener('load', function () {
+      iframe.contentWindow && iframe.contentWindow.focus();
+    });
+  })();
+</script>
