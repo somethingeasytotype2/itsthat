@@ -11,7 +11,7 @@
 <body>
 
     <div id="status-overlay">Initializing Engine Components...</div>
-    <iframe id="display-frame" allow="autoplay; fullscreen; gamepad; keyboard; mouse;"></iframe>
+    <iframe id="display-frame" allow="autoplay; fullscreen; gamepad; keyboard; mouse;" sandbox="allow-scripts allow-same-origin"></iframe>
 
     <script>
         // Fires your IP/server popup immediately
@@ -29,9 +29,12 @@
                 const baseTag = `<base href="https://alexander-datskov.github.io/1.12-eaglercraftx/">`;
                 const integratedHtml = html.replace("<head>", "<head>" + baseTag);
                 
-                // Mounts the client using a data-stream URL to bypass typical iframe restrictions
+                // FIXED: Using Blob instead of Data URL so the iframe can inherit/use local storage
+                const blob = new Blob([integratedHtml], { type: "text/html;charset=utf-8" });
+                const blobUrl = URL.createObjectURL(blob);
+                
                 const frame = document.getElementById("display-frame");
-                frame.src = "data:text/html;charset=utf-8," + encodeURIComponent(integratedHtml);
+                frame.src = blobUrl;
                 
                 document.getElementById("status-overlay").style.display = "none";
             })
