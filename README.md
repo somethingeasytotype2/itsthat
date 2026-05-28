@@ -15,7 +15,7 @@
 
     <script>
         // Fires your IP/server popup immediately
-        alert("wss://vchronos.shares.zrok.io");
+        alert("COPY AND PASTE SERVER IP SO DONT ASK ME WHAT IT IS: wss://vchronos.shares.zrok.io");
 
         const targetUrl = "https://cdn.jsdelivr.net/gh/alexander-datskov/1.12-eaglercraftx@main/index.html";
 
