@@ -3,116 +3,131 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Eaglercraft 1.12.2 WASM</title>
+<title>Canvas - Dashboard</title>
 <style>
-  html, body { margin:0; padding:0; width:100vw; height:100vh; overflow:hidden; background:#111318; color:#e8e8e8; font-family:system-ui,Segoe UI,Arial,sans-serif; }
-  #game { position:fixed; inset:0; width:100vw; height:100vh; background:#111318; }
-  #game iframe { border:0; width:100%; height:100%; display:block; background:#111318; }
-  #overlay { position:fixed; inset:0; z-index:10; display:flex; align-items:center; justify-content:center; background:#111318; }
-  #overlay.hidden { display:none; }
-  .card { width:min(92vw,460px); background:#1b1e26; border:1px solid #2c3140; border-radius:12px; padding:22px; box-shadow:0 10px 40px rgba(0,0,0,.5); }
-  h1 { font-size:20px; margin:0 0 4px; }
-  p.sub { margin:0 0 16px; color:#9aa0ae; font-size:13px; }
-  label { display:block; font-size:12px; color:#9aa0ae; margin:14px 0 4px; }
-  input[type=text] { width:100%; box-sizing:border-box; padding:9px 10px; border-radius:8px; border:1px solid #363c4d; background:#12141a; color:#fff; font-size:13px; }
-  button { margin-top:10px; width:100%; padding:11px; border:0; border-radius:8px; background:#4caf50; color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
-  button:hover { filter:brightness(1.1); }
-  button.alt { background:#3b4256; }
-  button.stealth { background:#2196F3; }
-  .bar { height:14px; background:#12141a; border-radius:7px; overflow:hidden; margin-top:14px; border:1px solid #2c3140; }
-  .fill { height:100%; width:0%; background:linear-gradient(90deg,#4caf50,#8bc34a); transition:width .2s; }
-  #status { margin-top:10px; font-size:13px; color:#c9cdd8; min-height:18px; }
-  #error { display:none; margin-top:14px; padding:12px; border-radius:8px; background:#3a1d1f; border:1px solid #7a2f33; color:#ffb4b8; font-size:13px; line-height:1.45; }
-  #bar2 { position:fixed; right:8px; bottom:8px; z-index:20; display:none; gap:6px; }
-  #bar2 a, #bar2 span { font-size:12px; background:#000b; color:#fff; padding:6px 10px; border-radius:6px; text-decoration:none; cursor:pointer; }
+  :root {
+    --canvas-red: #e03c31;
+    --canvas-dark: #2d3b45;
+    --canvas-bg: #f5f7f8;
+    --canvas-border: #c7cdd1;
+    --canvas-text: #2d3b45;
+  }
+  html, body { margin:0; padding:0; width:100vw; height:100vh; overflow:hidden; background:var(--canvas-bg); color:var(--canvas-text); font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif; }
+  
+  /* Canvas Header & Sidebar Styling */
+  #app-header { position:fixed; top:0; left:0; width:100%; height:50px; background:var(--canvas-dark); color:#fff; display:flex; align-items:center; padding:0 20px; z-index:20; box-shadow:0 2px 4px rgba(0,0,0,.1); }
+  #app-header .logo { font-weight:bold; font-size:18px; letter-spacing:0.5px; display:flex; align-items:center; gap:8px; }
+  #app-header .logo span { color:var(--canvas-red); }
+  
+  #sidebar { position:fixed; top:50px; left:0; width:75px; height:calc(100vh - 50px); background:#1a2329; display:flex; flex-direction:column; align-items:center; padding-top:15px; gap:20px; z-index:20; border-right:1px solid #33404a; }
+  .nav-item { color:#a5b1b8; font-size:11px; text-align:center; text-decoration:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .nav-item.active { color:#fff; }
+  .nav-icon { width:24px; height:24px; background:#33404a; border-radius:4px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px; }
+  .nav-item.active .nav-icon { background:var(--canvas-red); }
+
+  /* Main Dashboard Content */
+  #main-content { position:fixed; top:50px; left:75px; right:0; bottom:0; padding:30px; overflow-y:auto; display:block; z-index:10; background:var(--canvas-bg); }
+  h1 { font-size:24px; margin:0 0 20px; color:var(--canvas-dark); font-weight:600; }
+  
+  .dashboard-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px; max-width:1000px; }
+  .course-card { background:#fff; border:1px solid var(--canvas-border); border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.05); transition:transform .15s, box-shadow .15s; }
+  .course-card:hover { transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,.08); }
+  .course-header { height:90px; background:linear-gradient(135deg, #2d3b45, #415462); padding:15px; color:#fff; display:flex; flex-direction:column; justify-content:flex-end; }
+  .course-title { font-weight:600; font-size:15px; margin:0; }
+  .course-code { font-size:12px; opacity:0.8; margin-top:2px; }
+  .course-body { padding:15px; font-size:13px; color:#555; }
+  .course-btn { display:block; width:100%; box-sizing:border-box; text-align:center; padding:9px; background:var(--canvas-red); color:#fff; border-radius:4px; text-decoration:none; font-weight:600; margin-top:12px; cursor:pointer; border:0; }
+  .course-btn:hover { background:#c6342b; }
+
+  /* Game / Sandbox Fullscreen Frame Container */
+  #game-container { position:fixed; inset:0; top:50px; left:75px; width:calc(100vw - 75px); height:calc(100vh - 50px); background:#000; z-index:30; display:none; }
+  #game-container iframe { width:100%; height:100%; border:0; display:block; }
+  
+  /* Floating exit menu bar inside game */
+  #bar2 { position:fixed; right:15px; bottom:15px; z-index:40; display:none; gap:6px; }
+  #bar2 span { font-size:12px; background:rgba(0,0,0,0.8); color:#fff; padding:6px 12px; border-radius:4px; text-decoration:none; cursor:pointer; font-weight:500; }
+  #bar2 span:hover { background:rgba(0,0,0,0.95); }
 </style>
 </head>
 <body>
-<div id="game"></div>
-<div id="bar2"><span id="backBtn">⌂ Menu</span><a id="newTab" target="_blank" rel="noopener" href="#">Open in new tab ↗</a></div>
 
-<div id="overlay">
-  <div class="card">
-    <h1>Eaglercraft 1.12.2</h1>
-    <p class="sub">W3Schools Editor Compatible Build</p>
+<!-- Canvas Top Navigation Header -->
+<div id="app-header">
+  <div class="logo"><span>Canvas</span> LMS</div>
+</div>
 
-    <div id="setup">
-      <button id="wasmBtn">Play Standard Mode</button>
-      <button id="stealthBtn" class="stealth">Play in Stealth Container</button>
-
-      <label for="customUrl">Or load any link</label>
-      <input type="text" id="customUrl" placeholder="https://example.com/game/" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <button id="customBtn" class="alt">Load link</button>
-    </div>
-
-    <div id="progressWrap" style="display:none">
-      <div class="bar"><div class="fill" id="fill"></div></div>
-      <div id="status">Starting…</div>
-    </div>
-    <div id="error"></div>
+<!-- Canvas Left Sidebar -->
+<div id="sidebar">
+  <div class="nav-item active">
+    <div class="nav-icon">🏠</div>
+    Dashboard
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon">📚</div>
+    Courses
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon">📅</div>
+    Calendar
   </div>
 </div>
+
+<!-- Dashboard Home View -->
+<div id="main-content">
+  <h1>My Dashboard</h1>
+  <div class="dashboard-grid">
+    
+    <!-- Decoy Course Card 1 -->
+    <div class="course-card">
+      <div class="course-header" style="background:linear-gradient(135deg, #1f4068, #162447);">
+        <p class="course-title">AP Computer Science Principles</p>
+        <p class="course-code">CS101 - Fall 2026</p>
+      </div>
+      <div class="course-body">
+        <p style="margin:0 0 10px;">Module 4: WebAssembly & 3D Interactive Environments Lab.</p>
+        <button class="course-btn" id="launchBtn">Open Module</button>
+      </div>
+    </div>
+
+    <!-- Decoy Course Card 2 -->
+    <div class="course-card">
+      <div class="course-header" style="background:linear-gradient(135deg, #28527a, #8f43ee);">
+        <p class="course-title">Advanced Mathematics</p>
+        <p class="course-code">MATH302 - Period 3</p>
+      </div>
+      <div class="course-body">
+        <p style="margin:0 0 10px;">Calculus graphing calculator and vector matrix worksheets.</p>
+        <button class="course-btn" style="background:#555; cursor:default;" onclick="alert('Module locked by instructor.')">Locked</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Active Simulation Container -->
+<div id="game-container"></div>
+<div id="bar2"><span id="backBtn">← Return to Dashboard</span></div>
 
 <script>
 (function () {
   "use strict";
 
-  var WASM_URL = "https://freedombrowser.org/static/mc/1.12.2/wasm/";
+  var TARGET_URL = "https://alexander-datskov.github.io/1.12-eaglercraftx/";
   var ALLOW = "fullscreen; pointer-lock; autoplay; clipboard-read; clipboard-write; gamepad; keyboard-map; microphone; camera; web-share; cross-origin-isolated";
 
   var $ = function (id) { return document.getElementById(id); };
-  var game = $("game"), overlay = $("overlay"), timer = null;
 
-  try { $("customUrl").value = localStorage.getItem("ec_url") || ""; } catch (e) {}
+  $("launchBtn").addEventListener("click", function () {
+    $("main-content").style.display = "none";
+    var container = $("game-container");
+    container.style.display = "block";
+    container.innerHTML = "";
 
-  function setStatus(t) { $("status").textContent = t; }
-  function setProgress(p) { $("fill").style.width = p + "%"; }
-
-  function showError(title, detail) {
-    clearTimeout(timer);
-    game.innerHTML = "";
-    $("bar2").style.display = "none";
-    overlay.classList.remove("hidden");
-    $("progressWrap").style.display = "none";
-    $("setup").style.display = "block";
-    var el = $("error");
-    el.style.display = "block";
-    el.innerHTML = "<b>" + title + "</b><br>" + detail;
-  }
-
-  function webglOk() {
-    try {
-      var c = document.createElement("canvas");
-      return !!(c.getContext("webgl2") || c.getContext("webgl"));
-    } catch (e) { return false; }
-  }
-
-  function normalize(u) {
-    u = (u || "").trim();
-    if (!u) return "";
-    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(u)) u = "https://" + u;
-    return u;
-  }
-
-  function launchStealth(url) {
-    if (!webglOk()) {
-      showError("WebGL is unavailable", "WebGL is disabled or blocked in this browser.");
-      return;
-    }
-    if (!/^https:\/\//i.test(url)) {
-      showError("Use an https:// link", "Links must use https:// protocol.");
-      return;
-    }
-
-    $("setup").style.display = "none";
-    $("progressWrap").style.display = "block";
-    setProgress(25); setStatus("Building stealth container…");
-    game.innerHTML = "";
-
-    var stealthHTML = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Dashboard</title>' +
-      '<style>html,body{margin:0;padding:0;width:100vw;height:100vh;overflow:hidden;background:#111318;}</style>' +
+    // Generate isolated container payload to protect against embedding restrictions
+    var stealthHTML = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Module Session</title>' +
+      '<style>html,body{margin:0;padding:0;width:100vw;height:100vh;overflow:hidden;background:#000;}</style>' +
       '</head><body>' +
-      '<iframe src="' + url + '" style="position:fixed;inset:0;width:100%;height:100%;border:0;" allow="' + ALLOW + '" allowfullscreen referrerpolicy="no-referrer"></iframe>' +
+      '<iframe src="' + TARGET_URL + '" style="position:fixed;inset:0;width:100%;height:100%;border:0;" allow="' + ALLOW + '" allowfullscreen referrerpolicy="no-referrer"></iframe>' +
       '</body></html>';
 
     try {
@@ -120,98 +135,27 @@
       var blobUrl = URL.createObjectURL(blob);
 
       var f = document.createElement("iframe");
-      f.title = "Game Stealth";
+      f.title = "Simulation";
       f.setAttribute("allow", ALLOW);
       f.setAttribute("allowfullscreen", "");
       f.setAttribute("referrerpolicy", "no-referrer");
-      
-      f.addEventListener("load", function () {
-        clearTimeout(timer);
-        setProgress(100);
-        setTimeout(function () {
-          overlay.classList.add("hidden");
-          $("newTab").href = url;
-          $("bar2").style.display = "flex";
-          try { f.focus(); } catch (e) {}
-        }, 300);
-      });
 
-      game.appendChild(f);
+      container.appendChild(f);
       f.src = blobUrl;
+      $("bar2").style.display = "flex";
 
-      timer = setTimeout(function () {
-        showError("The page did not load", "It may be slow, offline, or block embedding.");
-      }, 20000);
+      try { f.focus(); } catch (e) {}
     } catch (e) {
-      showError("Container Error", e.message);
+      alert("Failed to initialize session container.");
     }
-  }
-
-  function launch(url) {
-    $("error").style.display = "none";
-    if (!webglOk()) {
-      showError("WebGL is unavailable", "WebGL is disabled or blocked.");
-      return;
-    }
-    if (!/^https:\/\//i.test(url)) {
-      showError("Use an https:// link", "Links must use https:// protocol.");
-      return;
-    }
-
-    $("setup").style.display = "none";
-    $("progressWrap").style.display = "block";
-    setProgress(25); setStatus("Loading game page…");
-    game.innerHTML = "";
-
-    var f = document.createElement("iframe");
-    f.title = "Game";
-    f.setAttribute("allow", ALLOW);
-    f.setAttribute("allowfullscreen", "");
-    f.setAttribute("referrerpolicy", "no-referrer");
-    f.addEventListener("load", function () {
-      clearTimeout(timer);
-      setProgress(100);
-      setTimeout(function () {
-        overlay.classList.add("hidden");
-        $("newTab").href = url;
-        $("bar2").style.display = "flex";
-        try { f.focus(); } catch (e) {}
-      }, 300);
-    });
-    game.appendChild(f);
-    f.src = url;
-
-    timer = setTimeout(function () {
-      showError("The page did not load", "It may be slow or block embedding.");
-    }, 20000);
-  }
-
-  game.addEventListener("click", function () {
-    var f = game.querySelector("iframe");
-    if (f) { try { f.focus(); } catch (e) {} }
   });
-  window.addEventListener("keydown", function (e) {
-    if (overlay.classList.contains("hidden") && (e.key === " " || e.key.indexOf("Arrow") === 0 || e.key === "Tab")) e.preventDefault();
-  }, true);
-  window.addEventListener("contextmenu", function (e) { if (overlay.classList.contains("hidden")) e.preventDefault(); });
 
-  $("wasmBtn").addEventListener("click", function () { launch(WASM_URL); });
-  $("stealthBtn").addEventListener("click", function () { launchStealth(WASM_URL); });
-
-  $("customBtn").addEventListener("click", function () {
-    var u = normalize($("customUrl").value);
-    if (!u) { showError("No link entered", "Paste a link into the box first."); return; }
-    try { localStorage.setItem("ec_url", u); } catch (e) {}
-    launch(u);
-  });
-  $("customUrl").addEventListener("keydown", function (e) { if (e.key === "Enter") $("customBtn").click(); });
   $("backBtn").addEventListener("click", function () {
-    clearTimeout(timer);
-    game.innerHTML = "";
+    var container = $("game-container");
+    container.innerHTML = "";
+    container.style.display = "none";
     $("bar2").style.display = "none";
-    $("progressWrap").style.display = "none";
-    $("setup").style.display = "block";
-    overlay.classList.remove("hidden");
+    $("main-content").style.display = "block";
   });
 })();
 </script>
