@@ -1,1 +1,2 @@
 Eaglercraft-1.12.2-WASM is unbelievably, just eaglercraft, and VoxelCraft is AI generated minecraft if you would like to give it a try. Resistant client is the main one that I am currently working on and updating (HUGE credits to Aero Client and go to their website for the actual place where I started this: (https://discord.gg/UGehZjXAyJ is where I found this client)
+If you find any bugs hopefully I find them too and fix them
