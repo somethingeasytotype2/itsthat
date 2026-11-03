@@ -11,7 +11,10 @@
         "use strict";
         window.eaglercraftXOpts = {
             container: "game_frame",
-            worldsDB: "worlds"
+            worldsDB: "worlds",
+            servers: [
+                { addr: "wss://chronoss.duckdns.org", name: "Chronos" }
+            ]
         };
 
         // Pre-initialize Native Mod Registration so FGD() can call it during class init
